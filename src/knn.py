@@ -40,11 +40,19 @@ kNN的一些问题:
 import numpy as np
 
 class KNN:
-    def classify(self,X:np.ndarray,y:np.ndarray,T:np.ndarray,k=3,lp='l2'):
+    def classify(self,X:np.ndarray,y:np.ndarray,T:np.ndarray,k=3,norm=False,lp='l2'):
         d = {val:id for id,val in enumerate(['l1','l2'],start=1)}
         if lp not in d:
             raise Exception(f'lp value [l1,l2]')
         p = d[lp]
+
+        # 正规化
+        if True == norm:
+            max = np.r_[X,T].max(axis=0)
+            min = np.r_[X,T].min(axis=0)
+            X = (X-min)/(max-min)
+            T = (T-min)/(max-min)
+
         res = np.zeros(T.shape[0])
         for i in range(T.shape[0]):
             res[i] = self.__knn(X,y,T[i],k,p)
@@ -65,4 +73,6 @@ if __name__ == '__main__':
     y = np.array([1,1,1,0,0,0])
     z = np.array([[18,92],[92,17],[101,23]])
 
+
     KNN().classify(X,y,z)
+    KNN().classify(X,y,z,norm=True)
