@@ -8,8 +8,12 @@ kNN3大重要要素:
 1). 距离度量
     使用: Lp Distance(也叫Minkowski Distance)
     它的公式为:
-    Lp = np.sum(np.abs(A-B)**p) ** (1/p)
-    (※其中A为输入标签数据, B为待分类数据 , p是变量,取值>=1)
+    Lp = np.sum(np.abs(A-B)**p,axis=1) ** (1/p)
+    -------------
+    ※其中:
+        A为输入标签数据,shape为(m,n)
+        B为待分类数据,shape为(m,1) 
+        p是变量,取值>=1
 
     其中当p=1的时候,Manhattan Distance(曼哈顿距离)
     L1 = np.sum(np.abs(A-B))
