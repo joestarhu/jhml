@@ -16,10 +16,10 @@ kNN3大重要要素:
         p是变量,取值>=1
 
     其中当p=1的时候,Manhattan Distance(曼哈顿距离)
-    L1 = np.sum(np.abs(A-B))
+    L1 = np.sum(np.abs(A-B),axis=1)
 
     其中当p=2的时候,Euclidean Distance(欧式距离)
-    L2 = np.sum((A-B) **2 ) ** (1/2)
+    L2 = np.sum((A-B) **2, axis=1 ) ** (1/2)
 
 2). k值选择(调参)
     k值的选择对算法会产生重大影响
