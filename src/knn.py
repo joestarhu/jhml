@@ -1,5 +1,5 @@
 """
----2020.04.07 Jian.Hu---------------------------------------------
+---2020.04.08---------------------------------------------
 [算法简介]:
 k-Nearest Neighbor(kNN) K近邻 ,用于监督学习的分类问题(可多分类)
 简单来说就是:找到与目标值距离最近的k个元素,k个元素中最多的分类,就是目标值的分类.
@@ -11,14 +11,14 @@ kNN3大重要要素:
     Lp = np.sum(np.abs(A-B)**p,axis=1) ** (1/p)
     -------------
     ※其中:
-        A为输入标签数据,shape为(m,n)
-        B为待分类数据,shape为(m,1)
+        A:np.ndarray,shape(m,n),输入数据
+        B:np.ndarray,shape(t,n),待分类数据
         p是变量,取值>=1
 
     其中当p=1的时候,Manhattan Distance(曼哈顿距离)
     L1 = np.sum(np.abs(A-B),axis=1) ** (1/1)
 
-    其中当p=2的时候,Euclidean Distance(欧式距离)
+    其中当p=2的时候,Euclidean Distance(欧氏距离)
     L2 = np.sum(np.abs(A-B)**2, axis=1) ** (1/2)
 
 2). k值选择(调参)
