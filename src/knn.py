@@ -43,40 +43,50 @@ kNN的一些问题:
 """
 import numpy as np
 
-class KNN:
-    def classify(self,X:np.ndarray,y:np.ndarray,T:np.ndarray,k=3,norm=False,lp='l2'):
-        d = {val:id for id,val in enumerate(['l1','l2'],start=1)}
-        if lp not in d:
-            raise Exception(f'lp value [l1,l2]')
-        p = d[lp]
+class kNN:
+    def predict(self,X,y,T,k=3,normalize=False,lp='l2'):
+        """
+        通过kNN算法预测分类
 
-        # 正规化
-        if True == norm:
-            max = np.r_[X,T].max(axis=0)
-            min = np.r_[X,T].min(axis=0)
-            X = (X-min)/(max-min)
-            T = (T-min)/(max-min)
+        Parameters:
+        -----------
+        X: np.ndarray 输入训练数组
+        y: np.ndarray 输入训练标签
+        T: np.ndarray 输入预测数据
+        k: int k值
+        normalize: bool 正规化
+        lp: str lp参数选择 可选内容为[l1,l2]
 
-        res = np.zeros(T.shape[0])
-        for i in range(T.shape[0]):
-            res[i] = self.__knn(X,y,T[i],k,p)
-        return res
+        Returns:
+        ----------
+        np.ndarray 预测数据的分类
+        """
+        if normalize:
+            ds = np.r_[X,T]
+            max,min = ds.max(axis=0),ds.min(axis=0)
+            ds =  (ds-min)/(max-min)
+            X = ds[:X.shape[0]]
+            T = ds[X.shape[0]:]
 
-    def __knn(self,X,y,t,k,p):
-        # 距离度量计算
-        lp = np.sum(np.abs(t-X)**p,axis=1)**(1/p)
-        # 获取k近邻的标签
-        nearest = y[lp.argsort()[:k]]
+        p = 2 if lp == 'l2' else 1
+        return np.array([self.__getNearestLabel(X,y,val,k,p) for val in T])
+
+    def __getNearestLabel(self,X,y,t,k,p):
+        # 计算lp Distance
+        lp = np.sum((t - X) ** p, axis=1) ** (1/p)
+        # 获取最近(数值最小的)k个标签
+        nlbl = y[lp.argsort()[:k]]
+        # 从标签中获取值最大的一个,作为输出
         d = {}
-        for i in nearest:
+        for i in nlbl:
             d[i] = d.get(i,0) + 1
         return sorted(d,reverse=True)[0]
 
 if __name__ == '__main__':
     X = np.array([[3,104],[2,100],[1,81],[101,10],[99,5],[98,2]])
-    y = np.array([1,1,1,0,0,0])
+    y = np.array(['动作','动作','动作','爱情','爱情','爱情'])
     z = np.array([[18,92],[92,17],[101,23]])
 
 
-    KNN().classify(X,y,z)
-    KNN().classify(X,y,z,norm=True)
+    kNN().predict(X,y,z)
+    kNN().predict(X,y,z,normalize=True)
