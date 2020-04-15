@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """
 ---2020.04.08---------------------------------------------
 [算法简介]:
@@ -64,7 +65,7 @@ class kNN:
         if normalize:
             ds = np.r_[X,T]
             max,min = ds.max(axis=0),ds.min(axis=0)
-            ds =  (ds-min)/(max-min)
+            ds = (ds-min)/(max-min)
             X = ds[:X.shape[0]]
             T = ds[X.shape[0]:]
 
@@ -73,7 +74,7 @@ class kNN:
 
     def __getNearestLabel(self,X,y,t,k,p):
         # 计算lp Distance
-        lp = np.sum((t - X) ** p, axis=1) ** (1/p)
+        lp = np.sum(np.abs(t - X) ** p, axis=1) ** (1/p)
         # 获取最近(数值最小的)k个标签
         nlbl = y[lp.argsort()[:k]]
         # 从标签中获取值最大的一个,作为输出
@@ -83,10 +84,14 @@ class kNN:
         return sorted(d,reverse=True)[0]
 
 if __name__ == '__main__':
-    X = np.array([[3,104],[2,100],[1,81],[101,10],[99,5],[98,2]])
-    y = np.array(['动作','动作','动作','爱情','爱情','爱情'])
-    z = np.array([[18,92],[92,17],[101,23]])
+    from sklearn.datasets import load_iris
+    import matplotlib.pyplot as plt
+    iris = load_iris()
 
-
-    kNN().predict(X,y,z)
-    kNN().predict(X,y,z,normalize=True)
+    X = np.r_[iris.data[:30],iris.data[50:80],iris.data[100:130]]
+    y = np.r_[iris.target[:30],iris.target[50:80],iris.target[100:130]]
+    tX = np.r_[iris.data[30:50],iris.data[80:100],iris.data[130:]]
+    ty = np.r_[iris.target[30:50],iris.target[80:100],iris.target[130:]]
+    
+    ret = np.array([ty[kNN().predict(X,y,tX,k=i,normalize=True)==ty].size/ty.size for i in range(3,20)])
+    print(ret)
