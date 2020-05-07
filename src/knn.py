@@ -1,5 +1,9 @@
 #! /usr/bin/env python3
 """
+---2020.05.07---------------------------------------------
+1). 优化KNN算法,代码缩减到5行
+2). 优化输出结果,输出结果包含分类结果和分类概率
+
 ---2020.04.08---------------------------------------------
 [算法简介]:
 k-Nearest Neighbor(kNN) K近邻 ,用于监督学习的分类问题(可多分类)
@@ -43,45 +47,57 @@ kNN的一些问题:
 <机器学习实战> - Peter Harrington
 """
 import numpy as np
+import pandas as pd
 
-class kNN:
-    def predict(self,X,y,T,k=3,normalize=False,lp='l2'):
+
+class KNN:
+    @staticmethod
+    def predict(X,y,T,k=3,p=2,normalize=False) -> pd.DataFrame:
         """
-        通过kNN算法预测分类
+        KNN, 采用Brute方式(计算目标和样本的每个距离)
 
-        Parameters:
-        -----------
-        X: np.ndarray 输入训练数组
-        y: np.ndarray 输入训练标签
-        T: np.ndarray 输入预测数据
-        k: int k值
-        normalize: bool 正规化
-        lp: str lp参数选择 可选内容为[l1,l2]
+        Paramters:
+        ----------------
+        X: np.ndarray
+            训练数据集(Training Datasets)
+        y: np.ndarray
+            训练数据集标签(Training Datasets Label)
+        T: np.ndarray
+            测试数据集(Testing Datasets)
+        k: int
+            K值,Default:3
+        p: int
+            P值,Default:2
+            P值为1就是曼哈顿距离(Mahattan Distance)
+            P值为2就是欧式距离(Euclidean Distance)
+        normalize: bool
+            正规化(归一化)标签,Default:False
+            True:   实施归一化
+            False:  对输入数据不做处理
 
         Returns:
-        ----------
-        np.ndarray 预测数据的分类
+        ---------
+        pd.DataFrame
+
+        示列:
+            动作	       爱情	     CLS
+        0	0.333333	0.666667	爱情
+        1	1.000000	0.000000	动作
         """
         if normalize:
             ds = np.r_[X,T]
-            max,min = ds.max(axis=0),ds.min(axis=0)
-            ds = (ds-min)/(max-min)
+            ds_min,ds_max = ds.min(axis=0),ds.max(axis=0)
+            ds = (ds - ds_min)/(ds_max-ds_min)
             X = ds[:X.shape[0]]
             T = ds[X.shape[0]:]
 
-        p = 2 if lp == 'l2' else 1
-        return np.array([self.__getNearestLabel(X,y,val,k,p) for val in T])
-
-    def __getNearestLabel(self,X,y,t,k,p):
-        # 计算lp Distance
-        lp = np.sum(np.abs(t - X) ** p, axis=1) ** (1/p)
-        # 获取最近(数值最小的)k个标签
-        nlbl = y[lp.argsort()[:k]]
-        # 从标签中获取值最大的一个,作为输出
-        d = {}
-        for i in nlbl:
-            d[i] = d.get(i,0) + 1
-        return sorted(d,reverse=True)[0]
+        lbl = np.unique(y)
+        n_lp = [np.sum(np.abs(t-X)**p,axis=1)**(1/p) for t in T]
+        n_idx = np.argsort(n_lp,axis=1)[:,:k]
+        proba = [[n[n==v].size / n.size for v in lbl] for n in y[n_idx]]
+        df = pd.DataFrame(proba,columns=lbl)
+        df['CLS'] = lbl[np.argmax(proba,axis=1)]
+        return df
 
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
@@ -92,6 +108,7 @@ if __name__ == '__main__':
     y = np.r_[iris.target[:30],iris.target[50:80],iris.target[100:130]]
     tX = np.r_[iris.data[30:50],iris.data[80:100],iris.data[130:]]
     ty = np.r_[iris.target[30:50],iris.target[80:100],iris.target[130:]]
-    
-    ret = np.array([ty[kNN().predict(X,y,tX,k=i,normalize=True)==ty].size/ty.size for i in range(3,20)])
-    print(ret)
+
+    for k in range(3,20,2):
+        error_size = ty.size - ty[KNN.predict(X,y,tX,k=k)['CLS'] == ty].size
+        print(1 - error_size/ty.size)
